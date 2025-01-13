@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>測試打字</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/vue@3"></script>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
+    <div id="app" class="text-center">
+        <h1 class="text-4xl font-bold mb-4">
+            <span class="typing-text">{{ typedText }}</span><span class="cursor">|</span>
+        </h1>
+    </div>
+
+    <script>
+        const app = Vue.createApp({
+            data() {
+                return {
+                    text: "Hello, World!",
+                    typedText: "",
+                    typingSpeed: 80, 
+                    cursorVisible: true
+                };
+            },
+            mounted() {
+                this.typeText();
+                this.blinkCursor();
+            },
+            methods: {
+                typeText() {
+                    let i = 0;
+                    const typingInterval = setInterval(() => {
+                        if (i < this.text.length) {
+                            this.typedText += this.text.charAt(i);
+                            i++;
+                        } else {
+                            clearInterval(typingInterval);
+                        }
+                    }, this.typingSpeed);
+                },
+                blinkCursor() {
+                    setInterval(() => {
+                        this.cursorVisible = !this.cursorVisible;
+                    }, 500); 
+                }
+            }
+        });
+
+        app.mount('#app');
+    </script>
+
+    <style>
+        .cursor {
+            opacity: 1;
+            transition: opacity 0.5s;
+        }
+        .cursor.blink {
+            opacity: 0;
+        }
+    </style>
+</body>
+</html>
