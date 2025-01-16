@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>按鈕顏色更換</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+  <div id="app" class="p-6 bg-white rounded shadow-md w-full max-w-md">
+    <h1 class="text-2xl font-bold mb-4 text-center">按鈕文字顯示</h1>
+    <!-- 按鈕區域 -->
+    <div class="space-y-4">
+      <!-- 手動為每個按鈕設置 v-model 和事件 -->
+      <label class="flex items-center p-2 rounded cursor-pointer" :class="{'bg-blue-500': checkedButtons.all, 'bg-gray-700': !checkedButtons.all}">
+        <input type="checkbox" v-model="checkedButtons.all" class="hidden" @change="updateButtonState('all')">
+        <span class="text-white">按鈕 all</span>
+      </label>
+      <label class="flex items-center p-2 rounded cursor-pointer" :class="{'bg-blue-500': checkedButtons.eap, 'bg-gray-700': !checkedButtons.eap}">
+        <input type="checkbox" v-model="checkedButtons.eap" class="hidden" @change="updateButtonState('eap')">
+        <span class="text-white">按鈕 eap</span>
+      </label>
+      <label class="flex items-center p-2 rounded cursor-pointer" :class="{'bg-blue-500': checkedButtons.eqp, 'bg-gray-700': !checkedButtons.eqp}">
+        <input type="checkbox" v-model="checkedButtons.eqp" class="hidden" @change="updateButtonState('eqp')">
+        <span class="text-white">按鈕 eqp</span>
+      </label>
+      <label class="flex items-center p-2 rounded cursor-pointer" :class="{'bg-blue-500': checkedButtons.switch, 'bg-gray-700': !checkedButtons.switch}">
+        <input type="checkbox" v-model="checkedButtons.switch" class="hidden" @change="updateButtonState('switch')">
+        <span class="text-white">按鈕 switch</span>
+      </label>
+      <label class="flex items-center p-2 rounded cursor-pointer" :class="{'bg-blue-500': checkedButtons.a_d, 'bg-gray-700': !checkedButtons.a_d}">
+        <input type="checkbox" v-model="checkedButtons.a_d" class="hidden" @change="updateButtonState('a_d')">
+        <span class="text-white">按鈕 a_d</span>
+      </label>
+    </div>
+
+    <!-- 顯示按鈕狀態 -->
+    <div id="buttonStates" class="mt-4 p-4 bg-gray-200 rounded">
+      <p class="text-center font-bold">按鈕值：<span id="stateDisplay">{{ currentState }}</span></p>
+    </div>
+  </div>
+
+<script>
+  new Vue({
+    el: '#app',
+    data: {
+      // 用於儲存每個按鈕的選中狀態
+      checkedButtons: {
+        all: true,
+        eap: true,
+        eqp: false,
+        switch: false,
+        a_d: false
+      },
+      // 按鈕狀態將從後端動態獲取，初始化為空
+      buttonStates: {},
+
+      currentState: '' // 當前顯示的按鈕值
+    },
+    
+    mounted() {
+      this.fetchButtonStates();
+    },
+
+    methods: {
+      fetchButtonStates() {
+        axios.get('http://127.0.0.1:5000/api/button-states')
+          .then(response => {
+            // 設置 buttonStates 為後端返回的值
+            this.buttonStates = response.data;
+            this.setInitialCurrentState();
+          })
+          .catch(error => {
+            console.error('獲取按鈕狀態失敗:', error);
+          });
+      },
+
+      // 設置初始的 currentState
+      setInitialCurrentState() {
+        let newState = '';
+        for (const key in this.checkedButtons) {
+          if (this.checkedButtons[key]) {
+            newState += this.buttonStates[key] || '';  // 拼接對應的按鈕值
+          }
+        }
+        this.currentState = newState;
+      },
+      // 當按鈕狀態變更時，更新後端的按鈕狀態
+      updateButtonState(button) {
+        // 發送請求到後端更新按鈕狀態
+        axios.post('http://127.0.0.1:5000/api/update-button-state', {
+          button_states: this.checkedButtons
+        })
+        .then(response => {
+          // 更新成功後，根據後端返回的數據重新設定 currentState
+          this.buttonStates = response.data.button_states;
+          this.currentState = response.data.current_state;
+        })
+        .catch(error => {
+          console.error('更新按鈕狀態失敗:', error);
+        });
+      }
+
+
+    }
+  });
+</script>
+
+  
+</body>
+</html>
